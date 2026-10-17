@@ -6,7 +6,7 @@
 <title>Hanna deBueno | Bruxa, artista e sacerdotisa em Brasília</title>
 <meta name="description" content="Aos olhos do Universo, me apresento aqui. Mas pra me conhecer, venha a um ritual presencial em Brasília. Com amor, Hanna deBueno.">
 <meta name="theme-color" content="#120f1c">
-<script>document.documentElement.classList.add('js')</script>
+<script>document.documentElement.classList.add('js');try{history.scrollRestoration='manual'}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..800&display=swap" rel="stylesheet">
@@ -669,6 +669,9 @@ h1 em .w>span,h2 em .w>span,.grad{background:var(--grad-dark);-webkit-background
 (function(){
   var $=function(s,c){return (c||document).querySelector(s)}, $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // sempre abre no topo, a menos que o link traga uma âncora (#templo, por exemplo)
+  function toTop(){ if(!location.hash){ document.documentElement.style.scrollBehavior='auto'; scrollTo(0,0); document.documentElement.style.scrollBehavior=''; } }
+  toTop(); addEventListener('load',toTop); addEventListener('pageshow',function(e){ if(e.persisted) toTop() });
   var clamp=function(v,a,b){return Math.min(Math.max(v,a),b)};
 
   // quebra os títulos em palavras pra subirem uma a uma
