@@ -669,9 +669,33 @@ h1 em .w>span,h2 em .w>span,.grad{background:var(--grad-dark);-webkit-background
 (function(){
   var $=function(s,c){return (c||document).querySelector(s)}, $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // sempre abre no topo, a menos que o link traga uma âncora (#templo, por exemplo)
-  function toTop(){ if(!location.hash){ document.documentElement.style.scrollBehavior='auto'; scrollTo(0,0); document.documentElement.style.scrollBehavior=''; } }
-  toTop(); addEventListener('load',toTop); addEventListener('pageshow',function(e){ if(e.persisted) toTop() });
+  // a página sempre abre na primeira dobra, mesmo que o link chegue com #templo ou o navegador tente voltar à posição antiga
+  var touched=false, root=document.documentElement;
+  ['touchstart','wheel','keydown','mousedown'].forEach(function(ev){ addEventListener(ev,function(){touched=true},{passive:true,once:true}) });
+  function toTop(force){
+    if(touched&&!force) return;
+    root.style.scrollBehavior='auto'; scrollTo(0,0); root.style.scrollBehavior='';
+  }
+  if(location.hash) history.replaceState(null,'',location.pathname+location.search);
+  toTop(true);
+  addEventListener('DOMContentLoaded',function(){toTop()});
+  addEventListener('load',function(){ toTop(); requestAnimationFrame(function(){toTop()}); setTimeout(toTop,120); setTimeout(toTop,450); });
+  addEventListener('pageshow',function(e){ if(e.persisted){ touched=false; toTop(true) } });
+  // aba que ficou aberta no celular: quem volta depois de 15 min começa do topo
+  var hiddenAt=0;
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){ hiddenAt=Date.now() }
+    else if(hiddenAt&&Date.now()-hiddenAt>15*60*1000){ touched=false; toTop(true) }
+  });
+  // links internos rolam até a seção sem colocar #âncora no endereço
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href^="#"]'); if(!a) return;
+    var id=a.getAttribute('href'); if(id.length<2) return;
+    var el=document.querySelector(id); if(!el) return;
+    e.preventDefault(); touched=true;
+    el.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+    if(id==='#conteudo'){ el.setAttribute('tabindex','-1'); el.focus({preventScroll:true}) }
+  });
   var clamp=function(v,a,b){return Math.min(Math.max(v,a),b)};
 
   // quebra os títulos em palavras pra subirem uma a uma
